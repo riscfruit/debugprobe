@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 
-# build for the Raspberry Pi Debug Probe by default
-set(PICO_BOARD debug_probe CACHE STRING "Board type")
+# Where the SDK looks for <PICO_BOARD>.h. Must be set BEFORE pico_sdk_import.cmake.
+set(PICO_BOARD_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR}/boards)
+
+# build for FramePico2 by default
+set(PICO_BOARD framepico2_debug_probe CACHE STRING "Board type")
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 

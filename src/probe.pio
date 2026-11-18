@@ -1,6 +1,8 @@
 /*
  * The MIT License (MIT)
  *
+ * Copyright (c) 2026 Tan Siret Akinci Riscfruit Laboratory
+ *
  * Copyright (c) 2021-2023 Raspberry Pi (Trading) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -84,6 +86,14 @@ static inline void probe_gpio_init()
     pio_gpio_init(pio0, PROBE_PIN_SWDIO);
     // Make sure SWDIO has a pullup on it. Idle state is high
     gpio_pull_up(PROBE_PIN_SWDIO);
+    #ifdef PROBE_IO_SWDI
+        // RP2350 pads reset isolated with input disabled (ISO=1, IE=0); only
+        // gpio_set_function() (called by gpio_init) clears that. Without this the
+        // PIO reads garbage from SWDI. Use gpio_init, NOT pio_gpio_init: the
+        // Schmitt trigger drives this pin, the PIO must never drive it.
+        gpio_init(PROBE_PIN_SWDI);
+        gpio_disable_pulls(PROBE_PIN_SWDI);
+    #endif
 }
 
 // DAP interface says all pins have to be High-Z when disabled
@@ -115,7 +125,17 @@ static inline void probe_sm_init(pio_sm_config* sm_config) {
 
 
     // Set SWD and SWDIO pins as output to start. This will be set in the sm
-    pio_sm_set_consecutive_pindirs(pio0, PROBE_SM, PROBE_PIN_OFFSET, 2, true);
+    #ifdef PROBE_IO_SWDI
+        // Only SWCLK is an output to start; the state machine sets SWDIO's
+        // direction per command and SWDI is a plain input. A mask lets the pins
+        // be any GPIO in any order.
+        pio_sm_set_pindirs_with_mask(pio0, PROBE_SM,
+                                     1u << PROBE_PIN_SWCLK,
+                                     1u << PROBE_PIN_SWCLK);
+    #else
+        // Set SWD and SWDIO pins as output to start. This will be set in the sm
+        pio_sm_set_consecutive_pindirs(pio0, PROBE_SM, PROBE_PIN_OFFSET, 2, true);
+    #endif
 
     // shift output right, autopull off, autopull threshold
     sm_config_set_out_shift(sm_config, true, false, 0);
