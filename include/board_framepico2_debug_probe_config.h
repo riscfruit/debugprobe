@@ -24,7 +24,7 @@
 // 1 = DEBUG TEST: ignore the Schmitt trigger and read SWDIO directly on GPIO28
 //     (works because GPIO28 reaches the SWDIO net through only R17, 100 ohm).
 // 0 = NORMAL: read SWDIO back through the Schmitt trigger on GPIO26.
-#define PROBE_BYPASS_SCHMITT 1
+#define PROBE_BYPASS_SCHMITT 0
 
 #if PROBE_BYPASS_SCHMITT
   // RAW mode needs SWCLK and SWDIO on consecutive GPIOs starting at the offset
@@ -34,6 +34,9 @@
   #define PROBE_IO_SWDI
   // Level-shifted input (output of the Schmitt trigger U1)
   #define PROBE_PIN_SWDI 26
+  // Diagnostics, enable ONE at a time if the connection fails:
+  // #define PROBE_SWDI_INVERT      // U1 is inverting (e.g. 74LVC1G14)
+  // #define PROBE_SWDI_PIO_FUNC    // hand GPIO26 to the PIO function
 #endif
 
 // UART config (UART0 on GPIO16 TX / GPIO17 RX)

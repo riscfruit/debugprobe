@@ -91,8 +91,15 @@ static inline void probe_gpio_init()
         // gpio_set_function() (called by gpio_init) clears that. Without this the
         // PIO reads garbage from SWDI. Use gpio_init, NOT pio_gpio_init: the
         // Schmitt trigger drives this pin, the PIO must never drive it.
-        gpio_init(PROBE_PIN_SWDI);
-        gpio_disable_pulls(PROBE_PIN_SWDI);
+        #ifdef PROBE_SWDI_PIO_FUNC
+                pio_gpio_init(pio0, PROBE_PIN_SWDI);
+        #else
+                gpio_init(PROBE_PIN_SWDI);
+        #endif
+                gpio_disable_pulls(PROBE_PIN_SWDI);
+        #ifdef PROBE_SWDI_INVERT
+                gpio_set_inover(PROBE_PIN_SWDI, GPIO_OVERRIDE_INVERT);
+        #endif
     #endif
 }
 
